@@ -4,6 +4,58 @@
   
     
     <entry>
+      <title>1.Flink简介</title>
+      <link href="/post/971239a4.html"/>
+      <url>/post/971239a4.html</url>
+      
+        <content type="html"><![CDATA[<h1 id="1-Flink简介"><a href="#1-Flink简介" class="headerlink" title="1.Flink简介"></a>1.Flink简介</h1><h2 id="1-1-离线批计算与实时流计算"><a href="#1-1-离线批计算与实时流计算" class="headerlink" title="1.1 离线批计算与实时流计算"></a>1.1 离线批计算与实时流计算</h2><p><strong><font color=OrangeRed><br>批计算与流计算，本质上就是对有界流和无界流的计算。<br></font></strong></p><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131702169.png" alt="Flink图1"></p><center>图1</center><ul><li><strong><font color=#0066FF>批计算</font></strong><br>  针对有界流，由于在产出计算结果前可以看到整个(完整)数据集，因而如下计算都可实现，对数据排序，计算全局统计值，对输入数据的整体产出最终汇总聚合报表。</li><li><strong><font color=#0066FF>流计算</font></strong><br>  针对无界流，由于永远无法看到输入数据的整体(数据的输入永远无法结束)，只能每逢数据到达就进行计算，并输出“当时”的计算结果（因而计算结果也不会是一个一次性的结果，而是源源不断的无界的结果流）</li></ul><h2 id="1-2-Apache-Flink-是什么"><a href="#1-2-Apache-Flink-是什么" class="headerlink" title="1.2 Apache Flink 是什么?"></a>1.2 Apache Flink 是什么?</h2><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131703655.png" alt="Flink图2"></p><center>图2</center><p><strong><font color=OrangeRed>Flink是一个以流为核心的高可用，高性能的分布式计算引擎。具备流批一体、高吞吐、低延迟、容错能力、大规模复杂计算等特点，在数据流上提供数据分发、通信等功能。</font></strong></p><ul><li><p><strong><font color=#0066FF>数据流</font></strong><br>  所有产生的数据都天然带有时间概念，把事件按照时间顺序排列起来，就形成了一个事件流，也被称作数据流。</p></li><li><p><strong><font color=#0066FF>流批一体</font></strong><br>  首先必须明白什么是有界数据和无界数据</p><ul><li><strong><font color=#0066FF>有界数据</font></strong><br>  有界数据就是在一个确定的时间范围内的数据流，有开始，有结束，一旦确定就不会再改变，一般批处理用来处理有界数据，如图1的bounded stream。</li><li><strong><font color=#0066FF>无界数据</font></strong><br>  无界数据就是持续产生的数据流，数据是无限的，有开始，无结束，一般流处理用来处理无界数据，如图1的unbounded stream。</li></ul><p>  Flink的设计思想是以流为核心，批是流的特例，擅长处理无界和有界数据，Flink提供精确的时间控制能力和有状态计算机制，可以轻松应对无界数据流，同时提供窗口处理有界数据流，所以被称为流批一体。</p></li><li><p><strong><font color=#0066FF>容错能力</font></strong><br>  在分布式系统中，硬件故障、进程异常、应用异常、网络故障等异常无处不在，Flink引擎必须保证故障发生后不仅可以重启应用程序，还要确保其内部状态保持一致，从最后一次正确的时间点重新出发。<br>  Flink提供集群级容错和应用级容错能力</p><ul><li><strong><font color=#0066FF>集群级容错</font></strong><br>  Flink与集群管理器紧密连接，如YARN、Kubernetes，当进程挂掉后，自动重启新进程接管之前的工作，同时具备高可用性，可消除所有单点故障。</li><li><strong><font color=#0066FF>应用级容错能力</font></strong><br>  Flink使用轻量级分布式快照，设计检查点(checkpoint)实现可靠容错。</li></ul><p>  Flink利用检查点特性，在框架层面提供 Exactly-once 语义，即端到端的一致性，确保数据仅处理一次，不会重复也不会丢失，即使出现故障，也能保证数据只写一次。</p></li></ul><h2 id="1-3-Flink的架构"><a href="#1-3-Flink的架构" class="headerlink" title="1.3 Flink的架构"></a>1.3 Flink的架构</h2><p><strong>Flink架构分为技术架构和运行架构两部分。</strong></p><table><tr><td bgcolor=DeepSkyBlue><font size=5><b>如下图为Flink技术架构</td></tr></table><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131705097.png" alt="Flink图3"/><p>Flink 作为流批一体的分布式计算引擎，必须提供面向开发人员的API层，同时还需要跟外部数据存储进行交互，需要连接器，作业开发、测试完毕后，需要提交集群执行，需要部署层，同时还需要运维人员能够管理和监控，还提供图计算、机器学习、SQL等，需要应用框架层。</p><table><tr><td bgcolor=DeepSkyBlue><font size=5><b>如下图为Flink运行架构</td></tr></table><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131706211.png" alt="Flink图4"></p><p>Flink 集群采取 Master - Slave 架构，Master的角色为 JobManager，负责集群和作业管理，Slave的角色是 TaskManager，负责执行计算任务，同时，Flink 提供客户端 Client 来管理集群和提交任务，JobManager 和 TaskManager 是集群的进程。</p><p><strong>（1）Client</strong></p><p>Flink 客户端是Flink 提供的 CLI 命令行工具，用来提交 Flink 作业到 Flink 集群，在客户端中负责 StreamGraph (流图)和 Job Graph (作业图)的构建。</p><p><strong>（2）JobManager</strong></p><p>JobManager 根据并行度将 Flink 客户端提交的Flink 应用分解为子任务，从资源管理器 ResourceManager 申请所需的计算资源，资源具备之后，开始分发任务到 TaskManager 执行 Task，并负责应用容错、跟踪作业的执行状态、发现异常后恢复作业等。</p><p><strong>（3）TaskManager</strong></p><p>TaskManager 接收 JobManager 分发的子任务，根据自身的资源情况管理子任务的启动、停止、销毁、异常恢复等生命周期阶段。Flink程序中必须有一个TaskManager。</p><h2 id="1-4-Flink的特性"><a href="#1-4-Flink的特性" class="headerlink" title="1.4 Flink的特性"></a>1.4 Flink的特性</h2><table><tr><td bgcolor=Gainsboro><font size=5><b>适用于几乎所有流式数据处理场景</td></tr></table><ul><li><strong>事件驱动型应用</strong></li><li><strong>流、批数据分析</strong></li><li><strong>数据管道及ETL</strong></li></ul><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131710215.jpeg" alt="Flink图5"></p><table><tr><td bgcolor=Gainsboro><font size=5><b>自带状态管理机制</td></tr></table><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131708285.png" alt="Flink图7"></p><table><tr><td bgcolor=Gainsboro><font size=5><b>强大的准确性保证</td></tr></table><ul><li><strong>Exactly-once 状态一致性</strong></li><li><strong>事件时间处理</strong></li><li><strong>专业的迟到数据处理</strong></li></ul><table><tr><td bgcolor=Gainsboro><font size=5><b>灵活丰富的多层API</td></tr></table><ul><li><strong>流、批数据之上的SQL查询</strong></li><li><strong>流、批数据之上的TableAPI</strong></li><li><strong>DataStream流处理API、DataSet批处理API</strong></li><li><strong>精细可控的processFunction</strong></li></ul><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131712730.png" alt="Flink图6"></p><table><tr><td bgcolor=Gainsboro><font size=5><b>规模弹性扩展</td></tr></table><ul><li><strong>可扩展的分布式架构</strong></li><li><strong>支持超大状态管理</strong></li><li><strong>增量checkpoint机制</strong></li></ul><p><img src="https://cdn.jsdelivr.net/gh/YiYuTET/ImageStorage/202304131712016.png" alt="Flink图8"></p><center><font color=OrangeRed size=4><b>算子粒度的独立并行度灵活配置(槽位资源可扩展、算子任务实例可扩展）</font></center><table><tr><td bgcolor=Gainsboro><font size=5><b>强大的运维能力</td></tr></table><ul><li><strong>弹性实施部署机制</strong></li><li><strong>高可用机制</strong></li><li><strong>保存点恢复机制</strong></li></ul><table><tr><td bgcolor=Gainsboro><font size=5><b>优秀的性能</font></td></tr></table><ul><li><strong>低延迟</strong></li><li><strong>高吞吐</strong></li><li><strong>内存计算</strong></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> Flink </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Flink </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>云服务器安装Flink</title>
+      <link href="/post/9aba4271.html"/>
+      <url>/post/9aba4271.html</url>
+      
+        <content type="html"><![CDATA[<h1 id="云服务器安装Flink"><a href="#云服务器安装Flink" class="headerlink" title="云服务器安装Flink"></a>云服务器安装Flink</h1><h2 id="1-Flink下载地址"><a href="#1-Flink下载地址" class="headerlink" title="1.Flink下载地址"></a>1.Flink<a href="https://flink.apache.org/downloads.html">下载地址</a></h2><h2 id="2-解压"><a href="#2-解压" class="headerlink" title="2.解压"></a>2.解压</h2><p>这里我解压到&#x2F;home&#x2F;software目录下</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf flink-1.13.2-bin-scala_2.11.tgz  -C /home/software/</span><br></pre></td></tr></table></figure><h2 id="3-配置环境变量"><a href="#3-配置环境变量" class="headerlink" title="3.配置环境变量"></a>3.配置环境变量</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export FLINK_HOME=/home/software/flink-1.13.2</span><br><span class="line">export PATH=$PATH:/$FLINK_HOME/bin</span><br><span class="line">export HADOOP_CONF_DIR=/home/software/hadoop-3.2.2/etc/hadoop</span><br></pre></td></tr></table></figure><h2 id="4-配置conf文件"><a href="#4-配置conf文件" class="headerlink" title="4.配置conf文件"></a>4.配置conf文件</h2><p>修改conf目录下的flink-conf.yaml文件</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim flink-conf.yaml</span><br></pre></td></tr></table></figure><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">jobmanager.rpc.address:</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.219</span></span><br><span class="line"></span><br><span class="line"><span class="attr">state.backend:</span> <span class="string">filesystem</span></span><br><span class="line"></span><br><span class="line"><span class="attr">state.backend.fs.checkpointdir:</span> <span class="string">hdfs://192.168.0.219:9000/flink-checkpoints</span></span><br><span class="line"><span class="attr">state.savepoints.dir:</span> <span class="string">hdfs://192.168.0.219:9000/flink-savepoints</span></span><br><span class="line"></span><br><span class="line"><span class="attr">high-availability:</span> <span class="string">zookeeper</span></span><br><span class="line"><span class="attr">high-availability.zookeeper.quorum:</span> <span class="number">192.168</span><span class="number">.0</span><span class="number">.219</span><span class="string">:2181</span></span><br><span class="line"><span class="attr">high-availability.storageDir:</span> <span class="string">hdfs://192.168.0.219:9000/flink/ha/</span></span><br><span class="line"><span class="attr">high-availability.zookeeper.client.acl:</span> <span class="string">open</span></span><br></pre></td></tr></table></figure><p>修改masters的IP地址</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">114.116.24.98:8082</span><br></pre></td></tr></table></figure><p>修改workers的IP地址</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">114.116.24.98</span><br></pre></td></tr></table></figure><p>修改conf下zoo.cfg配置</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataDir=/home/software/flink-1.13.2/tmp/zookeeper</span><br><span class="line">server.1=localhost:2887:3887</span><br></pre></td></tr></table></figure><h2 id="5-启动"><a href="#5-启动" class="headerlink" title="5.启动"></a>5.启动</h2><p>进入bin目录下，启动Flink</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start-cluster.sh</span><br></pre></td></tr></table></figure><p>jps查看进程出现TaskManagerRunner和StandaloneSessionClusterEntrypoint</p><p>在浏览器输入<a href="http://114.116.24.98:8082可进入Flink的Web页面">http://114.116.24.98:8082可进入Flink的Web页面</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Flink </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Flink </tag>
+            
+            <tag> 安装教程 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>云服务器伪分布式部署Spark</title>
       <link href="/post/41b91bba.html"/>
       <url>/post/41b91bba.html</url>
